@@ -3,72 +3,111 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TikTok Fix</title>
+    <title>TikTok Loop Mini App</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <script async src="https://www.tiktok.com/embed.js"></script>
     <style>
-        body { margin: 0; background-color: #000; color: white; font-family: sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; overflow: hidden; }
-        #video-wrapper { width: 100%; height: 80vh; display: flex; justify-content: center; align-items: center; }
-        .status { padding: 10px; font-size: 14px; color: #aaa; }
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #000;
+            color: white;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+        #video-container {
+            width: 100%;
+            height: 85vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .status-info {
+            padding: 10px;
+            font-size: 14px;
+            color: #00ff00;
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 8px;
+            margin-top: 5px;
+        }
+        /* Убираем лишние отступы у эмбеда TikTok */
+        blockquote {
+            margin: 0 !important;
+            padding: 0 !important;
+        }
     </style>
 </head>
 <body>
 
-    <div id="video-wrapper">
-        <div id="video-container"></div>
-    </div>
-    <div class="status" id="timer-info">Ожидание...</div>
+    <div id="video-container">
+        </div>
+    
+    <div class="status-info" id="timer-display">Загрузка...</div>
 
     <script>
         const tg = window.Telegram.WebApp;
-        tg.expand();
+        tg.expand(); // Разворачиваем на весь экран
 
-        // СОВЕТ: Если видео всё равно не грузится, замени эти ссылки на ПОЛНЫЕ (с ID в конце)
+        // Настройки плейлиста
         const playlist = [
-            { url: "https://vt.tiktok.com/ZSabBeT1c/", time: 7000 }, // Увеличил до 7 сек для теста
-            { url: "https://vt.tiktok.com/ZSabBJnHD/", time: 5000 }  // Увеличил до 5 сек для теста
+            { 
+                url: "https://www.tiktok.com/@zlata.babicka/video/7601947636333169942", 
+                duration: 5000 // 5 секунд
+            },
+            { 
+                url: "https://www.tiktok.com/@zlata.babicka/video/7601966443319577859", 
+                duration: 3000 // 3 секунды
+            }
         ];
 
         let currentIndex = 0;
+        let switchTimer;
 
-        function renderTikTok() {
-            const wrapper = document.getElementById('video-container');
-            const info = document.getElementById('timer-info');
-            const current = playlist[currentIndex];
+        function showVideo() {
+            const container = document.getElementById('video-container');
+            const display = document.getElementById('timer-display');
+            const currentVideo = playlist[currentIndex];
 
-            // 1. Очищаем старое видео
-            wrapper.innerHTML = '';
+            // Очищаем контейнер перед вставкой нового видео
+            container.innerHTML = '';
 
-            // 2. Создаем структуру для TikTok
+            // Создаем элемент цитаты для эмбеда
             const bq = document.createElement('blockquote');
             bq.className = 'tiktok-embed';
-            bq.cite = current.url;
-            bq.setAttribute('data-video-id', ''); 
+            bq.cite = currentVideo.url;
+            bq.setAttribute('data-video-id', currentVideo.url.split('/').pop());
             bq.style.width = '100%';
-            bq.style.minHeight = '500px';
+            bq.style.minWidth = '325px';
 
             const section = document.createElement('section');
             bq.appendChild(section);
-            wrapper.appendChild(bq);
+            container.appendChild(bq);
 
-            // 3. ПЕРЕЗАГРУЗКА ПЛЕЕРА (самый важный момент)
-            if (window.TiktokJS) {
-                window.TiktokJS.load();
-            }
+            // Перезагружаем скрипт TikTok для рендеринга видео
+            const oldScript = document.getElementById('tiktok-api');
+            if (oldScript) oldScript.remove();
 
-            info.innerText = `Видео ${currentIndex + 1} | След. через ${current.time / 1000} сек`;
+            const script = document.createElement('script');
+            script.id = 'tiktok-api';
+            script.src = "https://www.tiktok.com/embed.js";
+            document.body.appendChild(script);
 
-            // 4. Таймер
-            setTimeout(() => {
+            display.innerText = `Видео ${currentIndex + 1} | След. через ${currentVideo.duration / 1000} сек`;
+
+            // Установка таймера на переключение
+            clearTimeout(switchTimer);
+            switchTimer = setTimeout(() => {
                 currentIndex = (currentIndex + 1) % playlist.length;
-                renderTikTok();
-            }, current.time);
+                showVideo();
+            }, currentVideo.duration);
         }
 
-        // Запуск после небольшой паузы, чтобы скрипт TikTok успел подгрузиться
-        window.onload = () => {
-            setTimeout(renderTikTok, 1000);
-        };
+        // Запуск при загрузке страницы
+        window.onload = showVideo;
     </script>
 </body>
 </html>
