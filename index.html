@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TikTok Loop</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        body {
+            margin: 0;
+            background-color: #000;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            color: white;
+            font-family: sans-serif;
+            overflow: hidden;
+        }
+        #video-container {
+            width: 100%;
+            height: 90vh;
+            display: flex;
+            justify-content: center;
+        }
+        .status-bar {
+            padding: 10px;
+            font-size: 14px;
+            opacity: 0.6;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="video-container"></div>
+    <div class="status-bar" id="timer-info">Запуск...</div>
+
+    <script>
+        const tg = window.Telegram.WebApp;
+        tg.expand();
+
+        // Твои ссылки и настройки времени
+        const playlist = [
+            { url: "https://vt.tiktok.com/ZSabBeT1c/", time: 5000 }, // 5 сек
+            { url: "https://vt.tiktok.com/ZSabBJnHD/", time: 3000 }  // 3 сек
+        ];
+
+        let currentIndex = 0;
+
+        function playVideo() {
+            const container = document.getElementById('video-container');
+            const info = document.getElementById('timer-info');
+            const currentItem = playlist[currentIndex];
+
+            // Очистка и создание нового блока видео
+            container.innerHTML = '';
+            const blockquote = document.createElement('blockquote');
+            blockquote.className = 'tiktok-embed';
+            blockquote.cite = currentItem.url;
+            // Важно для работы мобильных ссылок vt.tiktok
+            blockquote.setAttribute('data-video-id', ''); 
+            
+            container.appendChild(blockquote);
+
+            // Перезагрузка скрипта TikTok
+            const oldScript = document.getElementById('tt-script');
+            if (oldScript) oldScript.remove();
+            
+            const script = document.createElement('script');
+            script.id = 'tt-script';
+            script.src = "https://www.tiktok.com/embed.js";
+            document.body.appendChild(script);
+
+            info.innerText = `След. видео через ${currentItem.time / 1000} сек...`;
+
+            // Установка таймера переключения
+            setTimeout(() => {
+                currentIndex = (currentIndex + 1) % playlist.length;
+                playVideo();
+            }, currentItem.time);
+        }
+
+        // Первый запуск
+        playVideo();
+    </script>
+</body>
+</html>
