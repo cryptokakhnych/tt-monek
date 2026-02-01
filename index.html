@@ -3,69 +3,33 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TT Auto-Reload</title>
+    <title>Auto-View Bot</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        body { 
-            margin: 0; 
-            background: #000; 
-            display: flex; 
-            flex-direction: column;
-            align-items: center; 
-            justify-content: center; 
-            height: 100vh; 
-            color: white;
-            font-family: sans-serif;
-        }
-        #video-container { width: 100%; height: 85vh; }
-        .timer { font-size: 12px; color: #555; margin-top: 10px; }
+        body { margin: 0; background: #000; display: flex; align-items: center; justify-content: center; height: 100vh; }
+        video { width: 100%; height: auto; max-height: 100vh; }
     </style>
 </head>
 <body>
 
-    <div id="video-container">
-        <blockquote class="tiktok-embed" 
-            cite="https://www.tiktok.com/@zlata.babicka/video/7601947636333169942" 
-            data-video-id="7601947636333169942"
-            data-autoplay="true"
-            style="width: 100%; height: 100%;">
-            <section></section>
-        </blockquote>
-    </div>
-
-    <div class="timer" id="countdown">Перезагрузка через 10 сек...</div>
+    <video id="myVideo" autoplay muted playsinline loop>
+        <source src="ЗДЕСЬ_НУЖНА_ПРЯМАЯ_ССЫЛКА_НА_MP4" type="video/mp4">
+    </video>
 
     <script>
-        // Инициализация Telegram Mini App
         const tg = window.Telegram.WebApp;
         tg.expand();
 
-        // Подключаем скрипт TikTok
-        const script = document.createElement('script');
-        script.src = "https://www.tiktok.com/embed.js";
-        document.body.appendChild(script);
-
-        // Логика перезагрузки страницы
-        let secondsLeft = 10;
-        const countdownElement = document.getElementById('countdown');
-
-        const timer = setInterval(() => {
-            secondsLeft--;
-            countdownElement.innerText = `Перезагрузка через ${secondsLeft} сек...`;
-            
-            if (secondsLeft <= 0) {
-                clearInterval(timer);
-                location.reload(); // Полная перезагрузка страницы
-            }
-        }, 1000);
-
-        // Попытка "разбудить" плеер программно через 2 секунды после загрузки
+        // Перезапуск всей страницы через 10 секунд
         setTimeout(() => {
-            const iframe = document.querySelector('iframe');
-            if (iframe) {
-                iframe.contentWindow.postMessage({ type: 'play' }, '*');
-            }
-        }, 2000);
+            location.reload();
+        }, 10000);
+
+        // Попытка включить звук после первого тапа (требование браузеров)
+        document.body.onclick = () => {
+            const v = document.getElementById('myVideo');
+            v.muted = false;
+        };
     </script>
 </body>
 </html>
